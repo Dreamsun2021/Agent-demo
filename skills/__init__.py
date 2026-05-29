@@ -1,0 +1,29 @@
+# skills/__init__.py
+from .web_skill import WEB_TOOLS, WEB_FUNCTIONS
+from .communication_skill import COMM_TOOLS, COMM_FUNCTIONS
+from .utility_skill import UTIL_TOOLS, UTIL_FUNCTIONS
+from .file_skill import FILE_TOOLS, FILE_FUNCTIONS
+from .shell_skill import SHELL_TOOLS, SHELL_FUNCTIONS
+from .code_skill import CODE_TOOLS, CODE_FUNCTIONS   # 新增
+
+ALL_TOOLS = []
+ALL_TOOLS.extend(WEB_TOOLS)
+ALL_TOOLS.extend(COMM_TOOLS)
+ALL_TOOLS.extend(UTIL_TOOLS)
+ALL_TOOLS.extend(FILE_TOOLS)
+ALL_TOOLS.extend(SHELL_TOOLS)
+ALL_TOOLS.extend(CODE_TOOLS)   # 新增
+
+AVAILABLE_FUNCTIONS = {}
+AVAILABLE_FUNCTIONS.update(WEB_FUNCTIONS)
+AVAILABLE_FUNCTIONS.update(COMM_FUNCTIONS)
+AVAILABLE_FUNCTIONS.update(UTIL_FUNCTIONS)
+AVAILABLE_FUNCTIONS.update(FILE_FUNCTIONS)
+AVAILABLE_FUNCTIONS.update(SHELL_FUNCTIONS)
+AVAILABLE_FUNCTIONS.update(CODE_FUNCTIONS)   # 新增
+
+def get_all_tools():
+    return ALL_TOOLS
+
+def get_tool_function_map():
+    return AVAILABLE_FUNCTIONS

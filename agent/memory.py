@@ -1,15 +1,28 @@
 # agent/memory.py
-
 class Memory:
-    """管理对话历史（短期记忆），未来可扩展长期记忆和 RAG 检索。"""
+    """管理对话历史（短期记忆），并可注入长期记忆上下文"""
 
     def __init__(self, system_prompt: str = ""):
         self.system_prompt = system_prompt
-        self.history = []  # 存储所有对话消息（不含 system）
+        self.history = []  # 只保存短期消息
+        self.long_term_context = ""  # 当前对话相关的长期记忆文本
 
+    def set_long_term_context(self, context: str):
+        """在系统提示词前插入长期记忆上下文"""
+        self.long_term_context = context
+
+    def get_messages(self) -> list:
+        """返回完整消息列表，包含长期记忆（放在 system prompt 后）"""
+        messages = [{"role": "system", "content": self.system_prompt}]
+        if self.long_term_context:
+            # 将长期记忆作为额外的系统信息插入
+            messages.append({"role": "system", "content": f"[相关长期记忆]\n{self.long_term_context}"})
+        messages.extend(self.history)
+        return messages
+
+    # ---- 原有的 add_message, add_user_message, add_assistant_message, add_tool_result, clear 保持不变 ----
     def add_message(self, role: str, content: str = None, tool_calls: list = None,
                     tool_call_id: str = None, name: str = None):
-        """添加一条消息到记忆"""
         msg = {"role": role}
         if content is not None:
             msg["content"] = content
@@ -29,10 +42,6 @@ class Memory:
 
     def add_tool_result(self, tool_call_id: str, result: str):
         self.add_message("tool", content=result, tool_call_id=tool_call_id)
-
-    def get_messages(self) -> list:
-        """返回完整的消息列表，前置 system prompt"""
-        return [{"role": "system", "content": self.system_prompt}] + self.history
 
     def clear(self):
         self.history.clear()

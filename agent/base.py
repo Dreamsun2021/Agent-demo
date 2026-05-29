@@ -4,6 +4,7 @@ from .planner import Planner
 from .executor import Executor
 from config import SYSTEM_PROMPT
 from logger import logger
+from memory.long_term import search_memory, add_memory
 
 
 class Agent:
@@ -14,8 +15,16 @@ class Agent:
         self.planner = Planner(api_key=api_key, model=model)
         self.executor = Executor()
 
+    # ────────────── 非流式对话 ──────────────
     def chat(self, user_input: str) -> str:
-        """非流式对话"""
+        # 1. 检索相关长期记忆并注入上下文
+        relevant_docs = search_memory(user_input, top_k=3)
+        if relevant_docs:
+            context = "\n".join(relevant_docs)
+            self.memory.set_long_term_context(context)
+        else:
+            self.memory.set_long_term_context("")
+
         self.memory.add_user_message(user_input)
         messages = self.memory.get_messages()
 
@@ -24,7 +33,13 @@ class Agent:
             if decision["type"] == "final_answer":
                 final_answer = decision["content"]
                 self.memory.add_assistant_message(content=final_answer)
+
+                # 2. 自动将本轮交互存入长期记忆
+                summary = f"用户问: {user_input}\n助手答: {final_answer}"
+                add_memory(summary)
+
                 return final_answer
+
             elif decision["type"] == "tool_call":
                 tool_calls = decision["tool_calls"]
                 assistant_msg, tool_msgs = self.executor.execute_tools(tool_calls)
@@ -38,25 +53,32 @@ class Agent:
                         result=tool_msg["content"],
                     )
                 messages = self.memory.get_messages()
+
             else:
-                # 未知决策类型，安全退出
                 logger.error(f"Planner 返回了未知的决策类型: {decision}")
                 return "抱歉，内部决策出现异常，请稍后重试。"
 
+    # ────────────── 流式对话 ──────────────
     def chat_stream(self, user_input: str):
+        # 1. 检索相关长期记忆并注入上下文
+        relevant_docs = search_memory(user_input, top_k=3)
+        if relevant_docs:
+            context = "\n".join(relevant_docs)
+            self.memory.set_long_term_context(context)
+        else:
+            self.memory.set_long_term_context("")
+
         self.memory.add_user_message(user_input)
         messages = self.memory.get_messages()
 
         while True:
             gen = self.planner.decide_stream(messages)
             text_buffer = ""
-            # 收集 token，但不立即输出
             for token in gen:
                 text_buffer += token
 
             # 检查是否有工具调用
             if hasattr(self.planner, "_tool_call_result"):
-                # 有工具调用 → 丢弃中间文本，执行工具后继续循环
                 tool_decision = self.planner._tool_call_result
                 del self.planner._tool_call_result
 
@@ -84,11 +106,16 @@ class Agent:
                         result=tm["content"],
                     )
                 messages = self.memory.get_messages()
-                # 继续循环，再次尝试流式生成（下一轮可能还有工具或最终回答）
                 continue
             else:
-                # 没有工具调用 → 最终回答已完整收集，一次性流式输出
+                # 没有工具调用，最终答案已完整收集
                 self.memory.add_assistant_message(content=text_buffer)
-                for token in text_buffer:  # 逐字符流式输出（原为逐词，此处保持字符级平滑）
+
+                # 2. 自动将本轮交互存入长期记忆
+                summary = f"用户问: {user_input}\n助手答: {text_buffer}"
+                add_memory(summary)
+
+                # 逐字符流式输出最终回答
+                for token in text_buffer:
                     yield token
                 return

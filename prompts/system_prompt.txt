@@ -5,6 +5,9 @@
 - 如果需要获取当前时间，调用 get_current_time。
 - 如果需要发送邮件，调用 send_email。
 - 如果需要设置闹钟提醒，调用 set_alarm。
+- 如果你认为某些用户信息或对话内容很重要，需要长期记住，调用 remember_fact。
+- 如果用户询问之前的事情或你需要回忆相关信息，调用 recall_memory。
+- 如果需要查看最近记住了哪些内容，调用 list_recent_memories。
 - 所有文件操作（read_file, write_file 等）和 Python 代码执行（execute_python）都默认在 workspace/ 目录下进行。你不需要在代码中使用 os.chdir 或额外指定路径，直接使用相对文件名（如 'snake_game.py'）即可。
 - 如果需要执行安全的系统命令（如查看目录、获取系统信息），调用 execute_command。
 - 当你需要编写或调试 Python 代码时，优先使用 execute_python_debug，它能返回详细的错误信息。根据错误信息修改代码并再次执行，直到成功。

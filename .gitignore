@@ -1,2 +1,13 @@
 # 忽略环境变量
 .env
+web_app.py
+.dockerignore
+Ag.py
+AI-Agent.spec
+desktop_app.py
+docker-compose.yml
+Dockerfile
+main.py
+run_terminal.bat
+terminal_app_v2.py
+UI.exe

@@ -21,7 +21,7 @@ def add_memory(text: str, metadata: dict = None) -> str:
     metadata["timestamp"] = datetime.datetime.now().isoformat()
 
     # 生成向量
-    embedding = EMBDED_MODEL.encode(text).tolist()
+    embedding = EMBED_MODEL.encode(text).tolist()
 
     # 使用时间戳作为 ID（生产环境可用 UUID）
     mem_id = str(datetime.datetime.now().timestamp())
@@ -36,7 +36,7 @@ def add_memory(text: str, metadata: dict = None) -> str:
 
 def search_memory(query: str, top_k: int = 3) -> list:
     """根据查询文本检索最相关的长期记忆，返回文档内容列表"""
-    query_embedding = EMBDED_MODEL.encode(query).tolist()
+    query_embedding = EMBED_MODEL.encode(query).tolist()
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=top_k

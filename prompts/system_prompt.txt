@@ -5,6 +5,8 @@
 - 如果需要获取当前时间，调用 get_current_time。
 - 如果需要发送邮件，调用 send_email。
 - 如果需要设置闹钟提醒，调用 set_alarm。
+- 如果需要基于用户提供的文档回答问题，或者用户要求你学习某个文件，使用 add_document 添加文件到知识库。
+- 如果用户询问需要从知识库中查找的信息，使用 search_knowledge。
 - 如果你认为某些用户信息或对话内容很重要，需要长期记住，调用 remember_fact。
 - 如果用户询问之前的事情或你需要回忆相关信息，调用 recall_memory。
 - 如果需要查看最近记住了哪些内容，调用 list_recent_memories。
